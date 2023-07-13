@@ -1,6 +1,6 @@
 'Globally-scoped variables to hold the find/replace text. These are used in the UpdateLinks Sub procedure,
 'but are populated by the private AddFindReplaceText Sub procedure.
-Dim findText(), replaceText() As Variant
+Dim findText(0 To 0), replaceText(0 To 0) As Variant
 
 
 '''
@@ -45,8 +45,8 @@ Sub AddFindReplaceText()
     Do Until userHasQuit = True
 
       'Resize the arrays to hold the new find/replace text
-      ReDim Preserve findText(1 To t)
-      ReDim Preserve replaceText(1 To t)
+      ReDim Preserve findText(0 To t)
+      ReDim Preserve replaceText(0 To t)
 
       'Prompt the user for find/replace text
       If findText(t) = "" And hasOneTextBox Then
@@ -160,12 +160,8 @@ Sub UpdateLinks()
     Dim oldLink, newLink, result As String
     Dim i As Long
     Dim links, allLinks As Variant
-    Dim resOld, resNew, resMsg As Variant
+    Dim resOld(0 To 0), resNew(0 To 0), resMsg(0 To 0) As Variant
     
-    'arrays need to be initialized
-    ReDim resOld(1 To 1)
-    ReDim resNew(1 To 1)
-    ReDim resMsg(1 To 1)
     
 
     'Get the find/replace text -- see AddFindReplaceText above
@@ -173,7 +169,7 @@ Sub UpdateLinks()
 
     
     'Check if the user didn't enter any find/replace text
-    If findText(1) = "" Then
+    If findText(0) = "" Then
         MsgBox "No find/replace text entered, skipping link update."
         Exit Sub
     End If
@@ -190,15 +186,21 @@ Sub UpdateLinks()
     End If
 
     'Get only the links that match the find text
-    links = Filter(allLinks, findText(1), True, vbTextCompare)
+    For i = 0 To UBound(findText)
+        If i = 0 Then
+            links = Filter(allLinks, findText(i), True, vbTextCompare)
+        Else
+            links = Filter(links, findText(i), True, vbTextCompare)
+        End If
+    Next i
     
     'Loop through all links
-    For i = LBound(links) To UBound(links)
+    For i = 0 To UBound(links)
         oldLink = links(i)
         newLink = oldLink ' Reset the newLink variable
         
         'Do find/replace on the string
-        For j = LBound(findText) To UBound(findText)
+        For j = 0 To UBound(findText)
           newLink = Replace(newLink, findText(j), replaceText(j))
         Next j
 
@@ -221,10 +223,12 @@ Sub UpdateLinks()
         ' End If
         
 '''''''''''''''
-        'Add the result to the results array
-        ReDim Preserve resOld(1 To i)
-        ReDim Preserve resNew(1 To i)
-        ReDim Preserve resMsg(1 To i)
+        If i > 0 Then
+            'Add the result to the results array
+            ReDim Preserve resOld(0 To i)
+            ReDim Preserve resNew(0 To i)
+            ReDim Preserve resMsg(0 To i)
+        End If
         
         resOld(i) = oldLink
         resNew(i) = newLink
