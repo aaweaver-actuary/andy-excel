@@ -112,13 +112,14 @@ End Sub
 ' Finally, this procedure modifies the 'result' variable with the result of the operation. This allows the
 ' UpdateLinks procedure to track the result of each link update.
 '''
-Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As String, ByRef result As String)
+Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As String, ByRef result As String, ByVal curWBName As String, ByVal persWBName As String)
     Dim wb As Workbook
     Dim links As Variant
     
     'Try to open the new workbook
     On Error Resume Next
     Application.DisplayAlerts = False
+    Application.EnableEvents = False
     Set wb = Workbooks.Open(newLink, False, True)
     DoEvents
     Application.DisplayAlerts = True
@@ -154,7 +155,18 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
         Else
             result = "No Links In Workbook"
         End If
+        Set wb = Nothing
     End If
+    Application.EnableEvents = True
+    
+    ' BEFORE LEAVING THIS sub, close all workbooks that are not the current WB
+    Dim wbCount As Integer
+    wbCount = Workbooks.Count
+    For i = wbCount To 1 Step -1
+        If Workbooks(i).Name <> curWBName And Workbooks(i).Name <> persWBName Then
+            Workbooks(i).Close
+        End If
+    Next i
 End Sub
 
 
@@ -189,13 +201,17 @@ End Sub
 ' the data from the aforementioned 2D array.
 '''
 Sub UpdateLinks()
-    Dim wb As Workbook
+    Dim wb, curWB, persWB As Workbook
+    Dim curWBName, persWBName As String
     Dim oldLink, newLink, result As String
     Dim i As Long
     Dim links, allLinks As Variant
     Dim resOld, resNew, resMsg As Variant
     
-    
+    Set curWB = ActiveWorkbook
+    curWBName = ActiveWorkbook.Name
+    Set persWB = Workbooks("PERSONAL.XLSB")
+    newLink = persWB.Name
 
     'Get the find/replace text -- see AddFindReplaceText above
     Call AddFindReplaceText
@@ -212,27 +228,6 @@ Sub UpdateLinks()
     'Get all external links
     links = ActiveWorkbook.LinkSources(xlExcelLinks)
     
-    'Dimension the result arrays
-'    resOld = UBound(links)
-'    resNew = UBound(links)
-'    resMsg = UBound(links)
-
-    'Exit if there are no links
-'    If IsEmpty(allLinks) Then
-'        MsgBox "No links found, skipping link update."
-'        Exit Sub
-'    End If
-
-    'Get only the links that match the find text
-'    For i = 0 To UBound(findText)
-'        If i = 0 Then
-'            links = Filter(allLinks, findText(i), True, vbTextCompare)
-'        Else
-'            links = Filter(links, findText(i), True, vbTextCompare)
-'        End If
-'
-'    Next i
-'
     'Loop through all links
     For i = 1 To UBound(links)
         oldLink = links(i)
@@ -242,39 +237,26 @@ Sub UpdateLinks()
         For j = 0 To UBound(findText)
           newLink = Replace(newLink, findText(j), replaceText(j))
         Next j
+        
+        If i = 1 Then
+            MsgBox "newLink: " & newLink
+        End If
 
         'Update the link
-        Call UpdateSingleWorkbook(oldLink, newLink, result)
-'''''''''''
-        ' 'Try to open the new workbook
-        ' On Error Resume Next
-        ' Set wb = Workbooks.Open(newLink, False, True)
-        ' If Err.Number <> 0 Then
-        '     Err.Clear
-        '     result = "Error Opening Workbook"
-        '     Set wb = Nothing
-        ' Else
-        '     On Error GoTo 0
-        '     'Change the link
-        '     ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
-        '     wb.Close SaveChanges:=False
-        '     result = "Updated Successfully"
-        ' End If
+        Call UpdateSingleWorkbook(oldLink, newLink, result, curWBName, persWBName)
         
-'''''''''''''''
+        'Add the result to the results array
         If i > 1 Then
-            'Add the result to the results array
             ReDim Preserve resOld(0 To i - 1)
             ReDim Preserve resNew(0 To i - 1)
             ReDim Preserve resMsg(0 To i - 1)
         Else
-            'Add the result to the results array
             ReDim resOld(0 To 0)
             ReDim resNew(0 To 0)
             ReDim resMsg(0 To 0)
         End If
         
-            
+        'Update the value of the result arrays
         resOld(i - 1) = oldLink
         resNew(i - 1) = newLink
         resMsg(i - 1) = result
@@ -295,4 +277,8 @@ Sub UpdateLinks()
         .Range("B2").Resize(UBound(resNew, 1)).Value = Application.Transpose(resNew)
         .Range("C2").Resize(UBound(resMsg, 1)).Value = Application.Transpose(resMsg)
     End With
+End Sub
+
+Sub testUpdateLinks()
+UpdateSingleWorkbook "O:\STAFFHQ\SYMDATA\Actuarial\Reserving Applications\IBNR Allocation\2Q2022 Analysis\Allied 2Q2022 (not analyzed).xlsb", "O:\STAFFHQ\SYMDATA\Actuarial\Reserving Applications\IBNR Allocation\3Q2022 Analysis\Allied 3Q2022.xlsb", "result", ThisWorkbook.Name, "PERSONAL.XLSB"
 End Sub
