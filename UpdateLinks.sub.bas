@@ -114,8 +114,8 @@ Sub UpdateLinks()
         newLink = oldLink ' Reset the newLink variable
         
         'Do find/replace on the string
-        If findText = "" Then
-            Quit
+        If findText(1) = "" Then
+            'do nothing
         Else
             For j = LBound(findText) To UBound(findText)
               newLink = Replace(newLink, findText(j), replaceText(j))
