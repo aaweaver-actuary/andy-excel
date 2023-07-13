@@ -160,6 +160,7 @@ Sub UpdateLinks()
     Dim oldLink, newLink, result As String
     Dim i As Long
     Dim links, allLinks As Variant
+    Dim resOld, resNew, resMsg As Variant
     
     ' 2D array needs to be initialized
     Dim results() As Variant
@@ -219,10 +220,13 @@ Sub UpdateLinks()
         
 '''''''''''''''
         'Add the result to the results array
-        ReDim Preserve results(1 To 3, 1 To (i + 1))
-        results(1, i) = oldLink
-        results(2, i) = newLink
-        results(3, i) = result
+        ReDim Preserve resOld(1 To i)
+        ReDim Preserve resNew(1 To i)
+        ReDim Preserve resMsg(1 To i)
+        
+        resOld(i) = oldLink
+        resNew(i) = newLink
+        resMsg(i) = result
     Next i
     
     'Remove the old sheet if it exists
@@ -236,6 +240,8 @@ Sub UpdateLinks()
     With ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
         .Name = "VbaLinkUpdate"
         .Range("A1:C1").Value = Array("Original Link", "Updated Link", "Result")
-        .Range("A2").Resize(UBound(results, 2), UBound(results, 1)).Value = Application.Transpose(results)
+        .Range("A2").Resize(UBound(resOld, 1)).Value = Application.Transpose(resOld)
+        .Range("B2").Resize(UBound(resNew, 1)).Value = Application.Transpose(resNew)
+        .Range("C2").Resize(UBound(resMsg, 1)).Value = Application.Transpose(resMsg)
     End With
 End Sub
