@@ -162,9 +162,11 @@ Sub UpdateLinks()
     Dim links, allLinks As Variant
     Dim resOld, resNew, resMsg As Variant
     
-    ' 2D array needs to be initialized
-    Dim results() As Variant
-    ReDim results(1 To 3, 1 To 1)
+    'arrays need to be initialized
+    ReDim resOld(1 To 1)
+    ReDim resNew(1 To 1)
+    ReDim resMsg(1 To 1)
+    
 
     'Get the find/replace text -- see AddFindReplaceText above
     Call AddFindReplaceText
