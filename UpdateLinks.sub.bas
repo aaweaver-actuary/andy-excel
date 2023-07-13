@@ -2,6 +2,16 @@
 'but are populated by the private AddFindReplaceText Sub procedure.
 Dim findText, replaceText As Variant
 
+'Helper function to check if a value is in an array
+Function IsInArray(valToBeFound As Variant, arr As Variant) As Boolean
+    Dim element As Variant
+    On Error GoTo IsInArrayError: ' if valToBeFound is not found in arr then an error occurs
+    IsInArray = Application.WorksheetFunction.Match(valToBeFound, arr, 0)
+    Exit Function
+IsInArrayError:
+    On Error GoTo 0
+    IsInArray = False
+End Function
 
 '''
 '===================================================================================================================
@@ -104,11 +114,11 @@ End Sub
 '''
 Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As String, ByRef result As String)
     Dim wb As Workbook
+    Dim links As Variant
     
     'Try to open the new workbook
     On Error Resume Next
     Application.DisplayAlerts = False
-    Application.EnableEvents = False ' Disable events
     Set wb = Workbooks.Open(newLink, False, True)
     DoEvents
     Application.DisplayAlerts = True
@@ -128,12 +138,23 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
     Else
         'If no error occurred, reset the error handler and update the link
         On Error GoTo 0
-        ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
-        wb.Close SaveChanges:=False
-        result = "Updated Successfully"
+        
+        'Get all links
+        links = ActiveWorkbook.LinkSources(xlLinkTypeExcelLinks)
+        
+        'Only try to change the link if oldLink exists in links
+        If Not IsEmpty(links) Then
+            If IsInArray(oldLink, links) Then
+                ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
+                wb.Close SaveChanges:=False
+                result = "Updated Successfully"
+            Else
+                result = "Old Link Not Found"
+            End If
+        Else
+            result = "No Links In Workbook"
+        End If
     End If
-    
-    Application.EnableEvents = True ' Re-enable events
 End Sub
 
 
