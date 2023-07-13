@@ -240,10 +240,6 @@ Sub UpdateLinks()
           newLink = Replace(newLink, findText(j), replaceText(j))
         Next j
         
-        If i = 1 Then
-            MsgBox "newLink: " & newLink
-        End If
-
         'Update the link
         Call UpdateSingleWorkbook(oldLink, newLink, result, curWB)
         
@@ -281,6 +277,3 @@ Sub UpdateLinks()
     End With
 End Sub
 
-Sub testUpdateLinks()
-UpdateSingleWorkbook "O:\STAFFHQ\SYMDATA\Actuarial\Reserving Applications\IBNR Allocation\2Q2022 Analysis\Allied 2Q2022 (not analyzed).xlsb", "O:\STAFFHQ\SYMDATA\Actuarial\Reserving Applications\IBNR Allocation\3Q2022 Analysis\Allied 3Q2022.xlsb", "result", ThisWorkbook.Name, "PERSONAL.XLSB"
-End Sub
