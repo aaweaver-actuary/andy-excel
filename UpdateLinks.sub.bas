@@ -147,7 +147,6 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
         If Not IsEmpty(links) Then
             If IsInArray(oldLink, links) Then
                 ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
-                wb.Close SaveChanges:=False
                 result = "Updated Successfully"
             Else
                 result = "Old Link Not Found"
@@ -155,8 +154,14 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
         Else
             result = "No Links In Workbook"
         End If
+    End If
+    
+    'Close the new workbook after the ChangeLink operation
+    If Not wb Is Nothing Then
+        wb.Close SaveChanges:=False
         Set wb = Nothing
     End If
+
     Application.EnableEvents = True
     
     ' BEFORE LEAVING THIS sub, close all workbooks that are not the current WB
@@ -168,9 +173,6 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
         End If
     Next i
 End Sub
-
-
-
 
 '''
 '===================================================================================================================
