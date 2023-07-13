@@ -40,7 +40,7 @@ Sub AddFindReplaceText()
     t = 1 ' Counter for the find/replace text
 
     'Prompt the user for find/replace text
-    Do Until userHasQuit = False
+    Do Until userHasQuit = True
 
       'Resize the arrays to hold the new find/replace text
       ReDim Preserve findText(1 To t)
