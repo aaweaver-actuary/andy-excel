@@ -108,6 +108,7 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
     'Try to open the new workbook
     On Error Resume Next
     Application.DisplayAlerts = False
+    Application.EnableEvents = False ' Disable events
     Set wb = Workbooks.Open(newLink, False, True)
     DoEvents
     Application.DisplayAlerts = True
@@ -131,7 +132,10 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
         wb.Close SaveChanges:=False
         result = "Updated Successfully"
     End If
+    
+    Application.EnableEvents = True ' Re-enable events
 End Sub
+
 
 
 
