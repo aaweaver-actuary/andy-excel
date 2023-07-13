@@ -114,31 +114,35 @@ Sub UpdateLinks()
         newLink = oldLink ' Reset the newLink variable
         
         'Do find/replace on the string
-        For j = LBound(findText) To UBound(findText)
-          newLink = Replace(newLink, findText(j), replaceText(j))
-        Next j
-        ' newLink = Replace(oldLink, findText, replaceText)
-        
-        'Try to open the new workbook
-        On Error Resume Next
-        Set wb = Workbooks.Open(newLink)
-        If Err.Number <> 0 Then
-            Err.Clear
-            result = "Error Opening Workbook"
-            Set wb = Nothing
+        If findText = "" Then
+            Quit
         Else
-            On Error GoTo 0
-            'Change the link
-            ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
-            wb.Close SaveChanges:=False
-            result = "Updated Successfully"
+            For j = LBound(findText) To UBound(findText)
+              newLink = Replace(newLink, findText(j), replaceText(j))
+            Next j
+            ' newLink = Replace(oldLink, findText, replaceText)
+            
+            'Try to open the new workbook
+            On Error Resume Next
+            Set wb = Workbooks.Open(newLink)
+            If Err.Number <> 0 Then
+                Err.Clear
+                result = "Error Opening Workbook"
+                Set wb = Nothing
+            Else
+                On Error GoTo 0
+                'Change the link
+                ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
+                wb.Close SaveChanges:=False
+                result = "Updated Successfully"
+            End If
+            
+            'Add the result to the results array
+            ReDim Preserve results(1 To 3, 1 To i)
+            results(1, i) = oldLink
+            results(2, i) = newLink
+            results(3, i) = result
         End If
-        
-        'Add the result to the results array
-        ReDim Preserve results(1 To 3, 1 To i)
-        results(1, i) = oldLink
-        results(2, i) = newLink
-        results(3, i) = result
     Next i
     
     'Remove the old sheet if it exists
