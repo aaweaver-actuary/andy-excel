@@ -158,9 +158,12 @@ End Sub
 Sub UpdateLinks()
     Dim wb As Workbook
     Dim oldLink, newLink, result As String
-    Dim results() As Variant
     Dim i As Long
     Dim links, allLinks As Variant
+    
+    ' 2D array needs to be initialized
+    Dim results() As Variant
+    ReDim results(1 To 3, 1 To 1)
 
     'Get the find/replace text -- see AddFindReplaceText above
     Call AddFindReplaceText
@@ -216,7 +219,7 @@ Sub UpdateLinks()
         
 '''''''''''''''
         'Add the result to the results array
-        ReDim Preserve results(1 To 3, 1 To i)
+        ReDim Preserve results(1 To 3, 1 To (i + 1))
         results(1, i) = oldLink
         results(2, i) = newLink
         results(3, i) = result
