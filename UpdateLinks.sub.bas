@@ -112,7 +112,7 @@ End Sub
 ' Finally, this procedure modifies the 'result' variable with the result of the operation. This allows the
 ' UpdateLinks procedure to track the result of each link update.
 '''
-Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As String, ByRef result As String, ByVal curWBName As String, ByVal persWBName As String)
+Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As String, ByRef result As String, ByVal curWB As Workbook)
     Dim wb As Workbook
     Dim links As Variant
     
@@ -141,12 +141,12 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
         On Error GoTo 0
         
         'Get all links
-        links = ActiveWorkbook.LinkSources(xlLinkTypeExcelLinks)
+        links = curWB.LinkSources(xlLinkTypeExcelLinks)
         
         'Only try to change the link if oldLink exists in links
         If Not IsEmpty(links) Then
             If IsInArray(oldLink, links) Then
-                ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
+                curWB.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
                 result = "Updated Successfully"
             Else
                 result = "Old Link Not Found"
@@ -165,13 +165,13 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
     Application.EnableEvents = True
     
     ' BEFORE LEAVING THIS sub, close all workbooks that are not the current WB
-    Dim wbCount As Integer
-    wbCount = Workbooks.Count
-    For i = wbCount To 1 Step -1
-        If Workbooks(i).Name <> curWBName And Workbooks(i).Name <> persWBName Then
-            Workbooks(i).Close
-        End If
-    Next i
+    ' Dim wbCount As Integer
+    ' wbCount = Workbooks.Count
+    ' For i = wbCount To 1 Step -1
+    '     If Workbooks(i).Name <> curWBName And Workbooks(i).Name <> persWBName Then
+    '         Workbooks(i).Close
+    '     End If
+    ' Next i
 End Sub
 
 '''
@@ -245,7 +245,7 @@ Sub UpdateLinks()
         End If
 
         'Update the link
-        Call UpdateSingleWorkbook(oldLink, newLink, result, curWBName, persWBName)
+        Call UpdateSingleWorkbook(oldLink, newLink, result, curWB)
         
         'Add the result to the results array
         If i > 1 Then
