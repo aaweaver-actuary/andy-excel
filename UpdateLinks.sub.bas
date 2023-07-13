@@ -45,8 +45,16 @@ Sub AddFindReplaceText()
     Do Until userHasQuit = True
 
       'Resize the arrays to hold the new find/replace text
-      ReDim Preserve findText(0 To t)
-      ReDim Preserve replaceText(0 To t)
+      If IsEmpty(findText) Then
+        ReDim findText(0 To t)
+      Else
+        ReDim Preserve findText(0 To t)
+      End If
+      If IsEmpty(replaceText) Then
+        ReDim replaceText(0 To t)
+      Else
+        ReDim Preserve replaceText(0 To t)
+      End If
 
       'Prompt the user for find/replace text
       If findText(0) = "" And hasOneTextBox Then
@@ -180,9 +188,9 @@ Sub UpdateLinks()
     links = ActiveWorkbook.LinkSources(xlExcelLinks)
     
     'Dimension the result arrays
-    resOld = UBound(links)
-    resNew = UBound(links)
-    resMsg = UBound(links)
+'    resOld = UBound(links)
+'    resNew = UBound(links)
+'    resMsg = UBound(links)
 
     'Exit if there are no links
 '    If IsEmpty(allLinks) Then
@@ -201,7 +209,7 @@ Sub UpdateLinks()
 '    Next i
 '
     'Loop through all links
-    For i = 0 To UBound(links)
+    For i = 1 To UBound(links)
         oldLink = links(i)
         newLink = oldLink ' Reset the newLink variable
         
@@ -229,16 +237,22 @@ Sub UpdateLinks()
         ' End If
         
 '''''''''''''''
-'        If i > 0 Then
-'            'Add the result to the results array
-'            ReDim Preserve resOld(i)
-'            ReDim Preserve resNew(i)
-'            ReDim Preserve resMsg(i)
-'        End If
+        If i > 1 Then
+            'Add the result to the results array
+            ReDim Preserve resOld(0 To i - 1)
+            ReDim Preserve resNew(0 To i - 1)
+            ReDim Preserve resMsg(0 To i - 1)
+        Else
+            'Add the result to the results array
+            ReDim resOld(0 To 0)
+            ReDim resNew(0 To 0)
+            ReDim resMsg(0 To 0)
+        End If
         
-        resOld(i) = oldLink
-        resNew(i) = newLink
-        resMsg(i) = result
+            
+        resOld(i - 1) = oldLink
+        resNew(i - 1) = newLink
+        resMsg(i - 1) = result
     Next i
     
     'Remove the old sheet if it exists
