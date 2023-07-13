@@ -2,6 +2,7 @@
 'but are populated by the private AddFindReplaceText Sub procedure.
 Dim findText(), replaceText() As Variant
 
+
 '''
 '===================================================================================================================
 '============== AddFindReplaceText =================================================================================
@@ -67,6 +68,64 @@ Sub AddFindReplaceText()
     Loop
 End Sub
 
+'''
+'===================================================================================================================
+'============== UpdateSingleWorkbook ===============================================================================
+'===================================================================================================================
+
+' UpdateSingleWorkbook is a private Sub procedure that is responsible for opening a workbook at the specified link
+' and updating the old link to the new link in the active Excel workbook.
+
+' This procedure is called by the UpdateLinks Sub procedure for each external link that needs to be updated.
+' It receives two arguments: oldLink and newLink, which are the original and updated links, respectively.
+
+' This procedure attempts to:
+
+'     1. Open the new link (i.e., the modified link) as an Excel workbook.
+'     2. If the workbook opens successfully:
+'           a. It replaces the old link with the new link in the active workbook.
+'           b. It then closes the newly opened workbook.
+'           c. The result of this operation is recorded as "Updated Successfully".
+'     3. If there is an error opening the workbook, it records the result as "Error Opening Workbook".
+
+' It is worth noting that this subroutine uses error handling to open the workbook and handles any errors by recording
+' the result as "Error Opening Workbook" and setting the workbook object to Nothing.
+
+' Finally, this procedure modifies the 'result' variable with the result of the operation. This allows the
+' UpdateLinks procedure to track the result of each link update.
+'''
+Private Sub UpdateSingleWorkbook(oldLink As String, newLink As String, ByRef result As String)
+    Dim wb As Workbook
+    
+    'Try to open the new workbook
+    On Error Resume Next
+    Application.DisplayAlerts = False
+    Set wb = Workbooks.Open(newLink, False, True)
+    DoEvents
+    Application.DisplayAlerts = True
+    
+    'If an error occurred, handle it
+    If Err.Number <> 0 Then
+        'Store the error number and description
+        Dim errNumber As Long
+        Dim errDescription As String
+        errNumber = Err.Number
+        errDescription = Err.Description
+        
+        'Clear the error
+        Err.Clear
+        result = "Error Opening Workbook: Error " & errNumber & " - " & errDescription
+        Set wb = Nothing
+    Else
+        'If no error occurred, reset the error handler and update the link
+        On Error GoTo 0
+        ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
+        wb.Close SaveChanges:=False
+        result = "Updated Successfully"
+    End If
+End Sub
+
+
 
 '''
 '===================================================================================================================
@@ -98,10 +157,10 @@ End Sub
 '''
 Sub UpdateLinks()
     Dim wb As Workbook
-    Dim oldLink, newLink, result As String
+    Dim oldLink, newLink As String
     Dim results() As Variant
     Dim i As Long
-    Dim links As Variant
+    Dim links, allLinks As Variant
 
     'Get the find/replace text -- see AddFindReplaceText above
     Call AddFindReplaceText
@@ -116,7 +175,16 @@ Sub UpdateLinks()
     'Otherwise, proceed with the link update:
     
     'Get all external links
-    links = ActiveWorkbook.LinkSources(xlExcelLinks)
+    allLinks = ActiveWorkbook.LinkSources(xlExcelLinks)
+
+    'Exit if there are no links
+    If IsEmpty(allLinks) Then
+        MsgBox "No links found, skipping link update."
+        Exit Sub
+    End If
+
+    'Get only the links that match the find text
+    links = Filter(allLinks, findText(1), True, vbTextCompare)
     
     'Loop through all links
     For i = LBound(links) To UBound(links)
@@ -127,22 +195,26 @@ Sub UpdateLinks()
         For j = LBound(findText) To UBound(findText)
           newLink = Replace(newLink, findText(j), replaceText(j))
         Next j
+
+        'Update the link
+        Call UpdateSingleWorkbook(oldLink, newLink, result)
+'''''''''''
+        ' 'Try to open the new workbook
+        ' On Error Resume Next
+        ' Set wb = Workbooks.Open(newLink, False, True)
+        ' If Err.Number <> 0 Then
+        '     Err.Clear
+        '     result = "Error Opening Workbook"
+        '     Set wb = Nothing
+        ' Else
+        '     On Error GoTo 0
+        '     'Change the link
+        '     ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
+        '     wb.Close SaveChanges:=False
+        '     result = "Updated Successfully"
+        ' End If
         
-        'Try to open the new workbook
-        On Error Resume Next
-        Set wb = Workbooks.Open(newLink, False, True)
-        If Err.Number <> 0 Then
-            Err.Clear
-            result = "Error Opening Workbook"
-            Set wb = Nothing
-        Else
-            On Error GoTo 0
-            'Change the link
-            ActiveWorkbook.ChangeLink oldLink, newLink, xlLinkTypeExcelLinks
-            wb.Close SaveChanges:=False
-            result = "Updated Successfully"
-        End If
-        
+'''''''''''''''
         'Add the result to the results array
         ReDim Preserve results(1 To 3, 1 To i)
         results(1, i) = oldLink
