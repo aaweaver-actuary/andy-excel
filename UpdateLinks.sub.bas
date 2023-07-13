@@ -1,6 +1,6 @@
 'Globally-scoped variables to hold the find/replace text. These are used in the UpdateLinks Sub procedure,
 'but are populated by the private AddFindReplaceText Sub procedure.
-Dim findText(0 To 0), replaceText(0 To 0) As Variant
+Dim findText, replaceText As Variant
 
 
 '''
@@ -39,7 +39,7 @@ Sub AddFindReplaceText()
     'Initialize variables
     userHasQuit = False ' Flag to indicate if the user has quit the loop of adding find/replace text
     hasOneTextBox = False ' Flag to indicate if the user has seen at least one text box
-    t = 1 ' Counter for the find/replace text
+    t = 0 ' Counter for the find/replace text
 
     'Prompt the user for find/replace text
     Do Until userHasQuit = True
@@ -49,16 +49,16 @@ Sub AddFindReplaceText()
       ReDim Preserve replaceText(0 To t)
 
       'Prompt the user for find/replace text
-      If findText(t) = "" And hasOneTextBox Then
+      If findText(0) = "" And hasOneTextBox Then
         userHasQuit = True
-      ElseIf t = 1 Then ' First time through, don't prompt to quit
+      ElseIf t = 0 Then ' First time through, don't prompt to quit
         findText(t) = InputBox("Enter the text to find. Note: this is your only opportunity to include the word 'quit'.", "Find Text")
       Else ' After the first time, prompt to quit
         findText(t) = InputBox("Enter the text to find, or 'quit' to quit", "Find Text")
       End If
 
       ' check the lowercase version of the find text for "quit", and ensure t > 1
-      If LCase(findText(t)) = "quit" And t > 1 Then
+      If LCase(findText(t)) = "quit" And t > 0 Then
         replaceText(t) = findText(t) ' Set the replace text to "quit" so that the loop will quit
         userHasQuit = True
       Else
@@ -160,7 +160,7 @@ Sub UpdateLinks()
     Dim oldLink, newLink, result As String
     Dim i As Long
     Dim links, allLinks As Variant
-    Dim resOld(0 To 0), resNew(0 To 0), resMsg(0 To 0) As Variant
+    Dim resOld, resNew, resMsg As Variant
     
     
 
@@ -177,23 +177,29 @@ Sub UpdateLinks()
     'Otherwise, proceed with the link update:
     
     'Get all external links
-    allLinks = ActiveWorkbook.LinkSources(xlExcelLinks)
+    links = ActiveWorkbook.LinkSources(xlExcelLinks)
+    
+    'Dimension the result arrays
+    resOld = UBound(links)
+    resNew = UBound(links)
+    resMsg = UBound(links)
 
     'Exit if there are no links
-    If IsEmpty(allLinks) Then
-        MsgBox "No links found, skipping link update."
-        Exit Sub
-    End If
+'    If IsEmpty(allLinks) Then
+'        MsgBox "No links found, skipping link update."
+'        Exit Sub
+'    End If
 
     'Get only the links that match the find text
-    For i = 0 To UBound(findText)
-        If i = 0 Then
-            links = Filter(allLinks, findText(i), True, vbTextCompare)
-        Else
-            links = Filter(links, findText(i), True, vbTextCompare)
-        End If
-    Next i
-    
+'    For i = 0 To UBound(findText)
+'        If i = 0 Then
+'            links = Filter(allLinks, findText(i), True, vbTextCompare)
+'        Else
+'            links = Filter(links, findText(i), True, vbTextCompare)
+'        End If
+'
+'    Next i
+'
     'Loop through all links
     For i = 0 To UBound(links)
         oldLink = links(i)
@@ -223,12 +229,12 @@ Sub UpdateLinks()
         ' End If
         
 '''''''''''''''
-        If i > 0 Then
-            'Add the result to the results array
-            ReDim Preserve resOld(0 To i)
-            ReDim Preserve resNew(0 To i)
-            ReDim Preserve resMsg(0 To i)
-        End If
+'        If i > 0 Then
+'            'Add the result to the results array
+'            ReDim Preserve resOld(i)
+'            ReDim Preserve resNew(i)
+'            ReDim Preserve resMsg(i)
+'        End If
         
         resOld(i) = oldLink
         resNew(i) = newLink
