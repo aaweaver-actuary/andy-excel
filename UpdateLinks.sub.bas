@@ -94,7 +94,7 @@ End Sub
 ' Finally, this procedure modifies the 'result' variable with the result of the operation. This allows the
 ' UpdateLinks procedure to track the result of each link update.
 '''
-Private Sub UpdateSingleWorkbook(oldLink As String, newLink As String, ByRef result As String)
+Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As String, ByRef result As String)
     Dim wb As Workbook
     
     'Try to open the new workbook
@@ -157,7 +157,7 @@ End Sub
 '''
 Sub UpdateLinks()
     Dim wb As Workbook
-    Dim oldLink, newLink As String
+    Dim oldLink, newLink, result As String
     Dim results() As Variant
     Dim i As Long
     Dim links, allLinks As Variant
