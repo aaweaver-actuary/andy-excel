@@ -32,11 +32,12 @@ Dim findText(), replaceText() As Variant
 ' in the active workbook.
 '''
 Sub AddFindReplaceText()
-    Dim userHasQuit As Boolean
+    Dim userHasQuit, hasOneTextBox As Boolean
     Dim t As Integer
 
     'Initialize variables
     userHasQuit = False ' Flag to indicate if the user has quit the loop of adding find/replace text
+    hasOneTextBox = False ' Flag to indicate if the user has seen at least one text box
     t = 1 ' Counter for the find/replace text
 
     'Prompt the user for find/replace text
@@ -47,7 +48,7 @@ Sub AddFindReplaceText()
       ReDim Preserve replaceText(1 To t)
 
       'Prompt the user for find/replace text
-      If findText(t) = "" Then
+      If findText(t) = "" And hasOneTextBox Then
         userHasQuit = True
       ElseIf t = 1 Then ' First time through, don't prompt to quit
         findText(t) = InputBox("Enter the text to find. Note: this is your only opportunity to include the word 'quit'.", "Find Text")
@@ -129,7 +130,7 @@ Sub UpdateLinks()
         
         'Try to open the new workbook
         On Error Resume Next
-        Set wb = Workbooks.Open(newLink)
+        Set wb = Workbooks.Open(newLink, False, True)
         If Err.Number <> 0 Then
             Err.Clear
             result = "Error Opening Workbook"
