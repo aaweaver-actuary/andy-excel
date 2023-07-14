@@ -6,7 +6,19 @@ Dim findText, replaceText As Variant
 '===================================================================================================================
 '============== IsInArray ==========================================================================================
 '===================================================================================================================
-'`IsInArray` is a helper function that checks if a value is in an array. 
+' `IsInArray` is a helper function that checks if a value is in an array. 
+'
+' Parameters
+' ----------
+' valToBeFound : Variant
+'     The value to be found in the array.
+' arr : Variant
+'     The array to be searched.
+
+' Returns
+' -------
+' Boolean
+'     True if the value is in the array, False otherwise.
 '''
 Function IsInArray(valToBeFound As Variant, arr As Variant) As Boolean
     Dim element As Variant
@@ -22,31 +34,37 @@ End Function
 '===================================================================================================================
 '============== AddFindReplaceText =================================================================================
 '===================================================================================================================
-' AddFindReplaceText is a Sub procedure that prompts the user to enter find/replace text pairs that will be used
-' to update links in the active Excel workbook.
+' `AddFindReplaceText` is a private subprocedure that prompts the user to enter find/replace text pairs that will be
+' used to update links in the active Excel workbook.
 
-' The procedure initializes a userHasQuit flag (set as False initially) and a counter variable t (set as 0 initially).
-' Then, it enters a loop which runs until the userHasQuit flag becomes True.
+' The procedure initializes a `userHasQuit` flag (set as `False` initially) and a counter variable `t` (set as
+' 0 initially). Then, it enters a loop which runs until the `userHasQuit` flag becomes `True`.
 
 ' Within this loop:
 
-' 1. The findText and replaceText arrays are resized to accommodate the new find/replace text pair.
+' 1. The `findText` and `replaceText` arrays are resized to accommodate the new find/replace text pair.
 
-' 2. The user is prompted to enter the find text. If it's the first iteration (t=0), the prompt does not
-' include the option to quit. From the second iteration onwards, the user is told to enter 'quit' if they
-' wish to quit.
+' 2. The user is prompted to enter the find text. If it's the first iteration (eg if `t=0`), the prompt
+' does not include the option to quit. From the second iteration onwards, the user is told to enter 'quit'
+' if they wish to quit, meaning if they are done entering find/replace text pairs.
 
 ' 3. If the user enters 'quit' and it's not the first iteration, the procedure sets the corresponding replace
-' text as 'quit', sets the userHasQuit flag as True, and breaks out of the loop. Otherwise, it prompts the
+' text as 'quit', sets the `userHasQuit` flag as `True`, and breaks out of the loop. Otherwise, it prompts the
 ' user to enter the replace text.
 
 ' 4. The counter variable `t` is incremented by 1 to move to the next find/replace pair.
 
-' After the user quits the loop, the findText and replaceText arrays are filled with find/replace text pairs.
-' These arrays are used in the UpdateLinks Sub procedure to perform the find/replace operation on all external links
-' in the active workbook.
+' After the user quits the loop, the `findText` and `replaceText` arrays are filled with find/replace text pairs.
+' These arrays are used in the main `UpdateLinks` Sub procedure to perform the find/replace operation on all
+' external links in the active workbook.
+
+' Note that this procedure uses the `ReDim` statement to resize the arrays. This statement is used to resize
+' an array that has already been declared. The `ReDim Preserve` statement is used to resize an array while
+' preserving the existing values in the array. This is necessary because the `findText` and `replaceText`
+' arrays are resized each time the user enters a new find/replace text pair, and we want to preserve the
+' existing values in the array.
 '''
-Sub AddFindReplaceText()
+Private Sub AddFindReplaceText()
     Dim userHasQuit, hasOneTextBox As Boolean
     Dim t As Integer
 
@@ -79,9 +97,9 @@ Sub AddFindReplaceText()
         findText(t) = InputBox("Enter the text to find, or 'quit' to quit", "Find Text")
       End If
 
-      ' check the lowercase version of the find text for "quit", and ensure t > 1
+      ' check the lowercase version of the `findText` for "quit", and ensure `t` > 1
       If LCase(findText(t)) = "quit" And t > 0 Then
-        replaceText(t) = findText(t) ' Set the replace text to "quit" so that the loop will quit
+        replaceText(t) = findText(t) ' Set the `replaceText` to "quit" so that the loop will quit
         userHasQuit = True
       Else
         replaceText(t) = InputBox("Enter the text to replace", "Replace Text")
@@ -95,26 +113,30 @@ End Sub
 '============== UpdateSingleWorkbook ===============================================================================
 '===================================================================================================================
 
-' UpdateSingleWorkbook is a private Sub procedure that is responsible for opening a workbook at the specified link
+' ` UpdateSingleWorkbook` is a private subprocedure that is responsible for opening a workbook at the specified link
 ' and updating the old link to the new link in the active Excel workbook.
 
-' This procedure is called by the UpdateLinks Sub procedure for each external link that needs to be updated.
-' It receives two arguments: oldLink and newLink, which are the original and updated links, respectively.
+' This procedure is called by the `UpdateLinks` subprocedure for each external link that needs to be updated.
+' It receives two arguments: `oldLink` and `newLink`, which are the original and updated links, respectively. It
+' also receives a reference to the result string variable to record the result of the operation and the current
+' workbook object.
 
 ' This procedure attempts to:
 
-'     1. Open the new link (i.e., the modified link) as an Excel workbook.
-'     2. If the workbook opens successfully:
-'           a. It replaces the old link with the new link in the active workbook.
-'           b. It then closes the newly opened workbook.
-'           c. The result of this operation is recorded as "Updated Successfully".
-'     3. If there is an error opening the workbook, it records the result as "Error Opening Workbook".
+' 1. Open the new link (i.e., the modified link) as an Excel workbook.
+' 2. If the workbook opens successfully:
+'   a. It checks if the `oldLink` exists in the current workbook's links. If so, it replaces the old link
+'      with the new link.
+'   b. It then closes the newly opened workbook.
+'   c. The result of this operation is recorded as "Updated Successfully". If the old link was not found, it records
+'      "Old Link Not Found"
+' 3. If there is an error opening the workbook, it records the result as "Error Opening Workbook".
 
-' It is worth noting that this subroutine uses error handling to open the workbook and handles any errors by recording
-' the result as "Error Opening Workbook" and setting the workbook object to Nothing.
+' It is worth noting that this subroutine uses error handling to open the workbook and handles any errors
+' by recording the result as "Error Opening Workbook" and setting the workbook object to Nothing.
 
-' Finally, this procedure modifies the 'result' variable with the result of the operation. This allows the
-' UpdateLinks procedure to track the result of each link update.
+' Finally, this procedure modifies the `result` variable with the result of the operation. This allows the
+' `UpdateLinks` procedure to track the result of each link update.
 '''
 Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As String, ByRef result As String, ByVal curWB As Workbook)
     Dim wb As Workbook
@@ -136,9 +158,11 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
         errNumber = Err.Number
         errDescription = Err.Description
         
-        'Clear the error
+        'Clear the error and set the result to "Error Opening Workbook"
         Err.Clear
         result = "Error Opening Workbook: Error " & errNumber & " - " & errDescription
+
+        'Close the new workbook after the ChangeLink operation
         Set wb = Nothing
     Else
         'If no error occurred, reset the error handler and update the link
@@ -167,15 +191,6 @@ Private Sub UpdateSingleWorkbook(ByVal oldLink As String, ByVal newLink As Strin
     End If
 
     Application.EnableEvents = True
-    
-    ' BEFORE LEAVING THIS sub, close all workbooks that are not the current WB
-    ' Dim wbCount As Integer
-    ' wbCount = Workbooks.Count
-    ' For i = wbCount To 1 Step -1
-    '     If Workbooks(i).Name <> curWBName And Workbooks(i).Name <> persWBName Then
-    '         Workbooks(i).Close
-    '     End If
-    ' Next i
 End Sub
 
 '''
@@ -183,28 +198,30 @@ End Sub
 '============== UpdateLinks ========================================================================================
 '===================================================================================================================
 
-' UpdateLinks is a Sub procedure that is responsible for updating the links in an active Excel workbook.
+' `UpdateLinks` is the main subprocedure from this script, and is responsible for updating the links in an active
+' Excel workbook.
 
-' This procedure gets all external links in the active workbook and then performs a find/replace operation
-' on each of these links based on user-provided text.
-
-' The find/replace text pairs are collected from the user by calling the AddFindReplaceText Sub procedure,
+' This procedure calls the `AddFindReplaceText` Sub procedure to collect the find/replace text pairs from the user,
 ' where the user is repeatedly prompted to enter find/replace text pairs until they input "quit".
 
-' For each external link in the active workbook, this procedure attempts to:
+' If no find/replace text pairs are entered by the user, the procedure ends prematurely with a message to the user.
+' If find/replace text pairs are provided, it gets all external links in the active workbook and then performs a
+' find/replace operation on each of these links based on the user-provided text.
 
-'     1. Replace the find text in the link with the replace text.
-'     2. Open the new link (i.e., the modified link) as an Excel workbook.
-'     3. If the workbook opens successfully, it replaces the old link with the new link in the active workbook,
-'        and then closes the newly opened workbook. The result of this operation is recorded as "Updated Successfully".
-'     4. If there is an error opening the workbook, it records the result as "Error Opening Workbook".
+' For each external link in the active workbook, this procedure:
 
-' The original link, the updated link, and the result of each operation are stored in a 2D array.
+' 1. Iterates through the find/replace text pairs to modify each link.
+' 2. Calls the `UpdateSingleWorkbook` Sub procedure to attempt to open the updated link, replace the old link
+'    in the active workbook with the new link, and close the newly opened workbook. The result of this operation
+'    is recorded.
 
-' Finally, this procedure adds a new sheet to the active workbook named "VbaLinkUpdate". If such a sheet already exists,
-' it is deleted before the new one is added. This new sheet contains a table with three columns: "Original Link",
-' "Updated Link", and "Result", and each row in this table corresponds to an external link in the workbook and contains
-' the data from the aforementioned 2D array.
+' The original link, the updated link, and the result of each operation are stored in `resOld`, `resNew`, and
+' `resMsg` arrays.
+
+' Finally, this procedure creates a new worksheet in the active workbook named "VbaLinkUpdate". If a worksheet with
+' this name already exists, it is deleted before the new one is created. This new sheet contains a table with three
+' columns: "Original Link", "Updated Link", and "Result", populated with the data from `resOld`, `resNew`, and
+' `resMsg` arrays.
 '''
 Sub UpdateLinks()
     Dim wb, curWB, persWB As Workbook
@@ -217,7 +234,7 @@ Sub UpdateLinks()
     Set curWB = ActiveWorkbook
     curWBName = ActiveWorkbook.Name
     Set persWB = Workbooks("PERSONAL.XLSB")
-    newLink = persWB.Name
+    persWBName = persWB.Name
 
     'Get the find/replace text -- see AddFindReplaceText above
     Call AddFindReplaceText
@@ -280,4 +297,3 @@ Sub UpdateLinks()
         .Range("C2").Resize(UBound(resMsg, 1)).Value = Application.Transpose(resMsg)
     End With
 End Sub
-
