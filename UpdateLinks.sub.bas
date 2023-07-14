@@ -1,12 +1,45 @@
-'Globally-scoped variables to hold the find/replace text. These are used in the `UpdateLinks` Sub procedure,
-'but are populated by the private `AddFindReplaceText` Sub procedure.
+'''
+'===================================================================================================================
+'============== FileUpdate =========================================================================================
+'===================================================================================================================
+' ** Note that I switch back and forth between the terms "macro" and "subprocedure" in this file. A macro is a
+' subprocedure that is called from the macro dialog box in Excel. Subprocedure is a more general term that is 
+' used to refer to any BASIC procedure that is not a function. In this file, I use the term "macro" to refer to
+' the same concept as "subprocedure" because the procedures in this file are all called from the macro dialog
+' box in Excel. **
+
+' This module contains the `UpdateLinks` subprocedure, which is the main procedure for updating external links in
+' the active Excel workbook. It also contains helper functions and subprocedures that are used by `UpdateLinks`.
+
+' The macro is called from the macro dialog box in Excel. When you run the macro:
+'   1. The user is prompted to enter find/replace text pairs that will be used to update links in the active
+'      Excel workbook. The user can enter as many find/replace text pairs as they wish. The user can also enter
+'      the word 'quit' as the find text to quit the loop of adding find/replace text pairs.
+
+'      The macro builds two arrays: one with the old link and one with the new link. The old link is the
+'      current link, and the new link is the current link with the find text replaced by the replace text
+'      in the same order as the find/replace text pairs were entered by the user.
+
+'   2. The macro loops through all external links in the active Excel workbook. For each external link:
+'       a. The macro opens the workbook at the link in read-only mode.
+'       b. The macro changes the link from the old file to the new file.
+'       c. The macro closes the workbook that was just used to update the link.
+'       d. The macro then moves to the next link that was found in the original Excel workbook.
+
+'   3. If there are no links or some other error occurs, the macro displays a message box indicating that
+'      no links were found or that an error occurred and quits.
+'''
+
+
+'These are some globally-scoped variables to hold the find/replace text. These are used in the
+'`UpdateLinks` subprocedure, but are populated by the private `AddFindReplaceText` subprocedure.
 Dim findText, replaceText As Variant
 
 '''
 '===================================================================================================================
 '============== IsInArray ==========================================================================================
 '===================================================================================================================
-' `IsInArray` is a helper function that checks if a value is in an array. 
+' `IsInArray` is a helper function that checks if a value is in an array.
 '
 ' Parameters
 ' ----------
