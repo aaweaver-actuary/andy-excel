@@ -1,8 +1,13 @@
-'Globally-scoped variables to hold the find/replace text. These are used in the UpdateLinks Sub procedure,
-'but are populated by the private AddFindReplaceText Sub procedure.
+'Globally-scoped variables to hold the find/replace text. These are used in the `UpdateLinks` Sub procedure,
+'but are populated by the private `AddFindReplaceText` Sub procedure.
 Dim findText, replaceText As Variant
 
-'Helper function to check if a value is in an array
+'''
+'===================================================================================================================
+'============== IsInArray ==========================================================================================
+'===================================================================================================================
+'`IsInArray` is a helper function that checks if a value is in an array. 
+'''
 Function IsInArray(valToBeFound As Variant, arr As Variant) As Boolean
     Dim element As Variant
     On Error GoTo IsInArrayError: ' if valToBeFound is not found in arr then an error occurs
@@ -17,26 +22,25 @@ End Function
 '===================================================================================================================
 '============== AddFindReplaceText =================================================================================
 '===================================================================================================================
-
 ' AddFindReplaceText is a Sub procedure that prompts the user to enter find/replace text pairs that will be used
 ' to update links in the active Excel workbook.
 
-' The procedure initializes a userHasQuit flag (set as False initially) and a counter variable t (set as 1 initially).
+' The procedure initializes a userHasQuit flag (set as False initially) and a counter variable t (set as 0 initially).
 ' Then, it enters a loop which runs until the userHasQuit flag becomes True.
 
 ' Within this loop:
 
-'     1. The findText and replaceText arrays are resized to accommodate the new find/replace text pair.
+' 1. The findText and replaceText arrays are resized to accommodate the new find/replace text pair.
 
-'     2. The user is prompted to enter the find text. If it's the first iteration (t=1), the prompt does not
-'        include the option to quit. From the second iteration onwards, the user is told to enter 'quit' if they
-'        wish to quit.
+' 2. The user is prompted to enter the find text. If it's the first iteration (t=0), the prompt does not
+' include the option to quit. From the second iteration onwards, the user is told to enter 'quit' if they
+' wish to quit.
 
-'     3. If the user enters 'quit' and it's not the first iteration, the procedure sets the corresponding replace
-'        text as 'quit', sets the userHasQuit flag as True, and breaks out of the loop. Otherwise, it prompts the
-'        user to enter the replace text.
+' 3. If the user enters 'quit' and it's not the first iteration, the procedure sets the corresponding replace
+' text as 'quit', sets the userHasQuit flag as True, and breaks out of the loop. Otherwise, it prompts the
+' user to enter the replace text.
 
-'     4. The counter variable t is incremented by 1 to move to the next find/replace pair.
+' 4. The counter variable `t` is incremented by 1 to move to the next find/replace pair.
 
 ' After the user quits the loop, the findText and replaceText arrays are filled with find/replace text pairs.
 ' These arrays are used in the UpdateLinks Sub procedure to perform the find/replace operation on all external links
